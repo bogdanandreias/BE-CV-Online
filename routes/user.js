@@ -3,7 +3,12 @@ const User = require('../model/User')
 const jwt = require('jsonwebtoken')
 const {registerValidation, loginValidation} = require('../validation')
 const bcrypt = require('bcryptjs')
+const verify = require('./verifyToken')
 
+router.get('/info', verify, async (req, res) => {
+    const user = await User.findById(req.user._id)
+    res.send(user)
+})
 
 router.post('/register', async (req, res) => {
     
