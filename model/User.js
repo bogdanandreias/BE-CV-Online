@@ -31,39 +31,69 @@ const userSchema = new mongoose.Schema({
     cv: {
         occupation: {
             type: String,
-            required: false,
             min: 3,
             max: 100
         },
         about: {
             type: String,
-            required: false,
             min: 50,
             max: 3000
+        },
+        skill1: {
+            title: {
+                type: String,
+                min: 2,
+                max: 100
+            },
+            description: {
+                type: String,
+                min: 10,
+                max: 300
+            }
+        },
+        skill2: {
+            title: {
+                type: String,
+                min: 2,
+                max: 100
+            },
+            description: {
+                type: String,
+                min: 10,
+                max: 300
+            }
+        },
+        skill3: {
+            title: {
+                type: String,
+                min: 2,
+                max: 100
+            },
+            description: {
+                type: String,
+                min: 10,
+                max: 300
+            }
         },
     },
     social: {
         facebook: {
             type: String,
-            required: false,
             min: 3,
             max: 200
         },
         instagram: {
             type: String,
-            required: false,
             min: 3,
             max: 200
         },
         linkedin: {
             type: String,
-            required: false,
             min: 3,
             max: 200
         },
         twitter: {
             type: String,
-            required: false,
             min: 3,
             max: 200
         },
@@ -77,10 +107,10 @@ const userSchema = new mongoose.Schema({
     },
     pdf: {
         type: String,
-        required: false,
         min: 3,
         max: 1000
-    }
+    },
+    test: []
 })
 
 module.exports = mongoose.model('User', userSchema)
