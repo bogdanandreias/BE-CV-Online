@@ -3,7 +3,49 @@ const User = require('../model/User')
 const jwt = require('jsonwebtoken')
 const {registerValidation, loginValidation} = require('../validation')
 const bcrypt = require('bcryptjs')
+const verify = require('./verifyToken')
 
+router.put('/info', verify, async (req, res) => {
+    // const user = await User.findById(req.user._id)
+    // res.send(req.body.occupation)
+    var cv = {
+        occupation: req.body.occupation,
+        about: req.body.about,
+        skill1: {
+            title: req.body.skill1 ? req.body.skill1.title : null,
+            description:  req.body.skill1 ? req.body.skill1.description : null,
+        },
+        skill2: {
+            title: req.body.skill2 ? req.body.skill2.title : null,
+            description:  req.body.skill2 ? req.body.skill2.description : null,
+        },
+        skill3: {
+            title: req.body.skill3 ? req.body.skill3.title : null,
+            description:  req.body.skill3 ? req.body.skill3.description : null,
+        },
+    }
+    var social = {
+        facebook: req.body.social ? req.body.social.facebook : null,
+        instagram: req.body.social ? req.body.social.instagram : null,
+        twitter: req.body.social ? req.body.social.twitter : null,
+        linkedin: req.body.social ? req.body.social.linkedin : null,
+    }
+    const updatedUser = await User.updateOne(
+        { _id: req.user._id },
+        { $set: 
+            { 
+                "cv":  cv,
+                "social": social
+            }
+        }
+    )
+    res.send(updatedUser)
+})
+
+router.get('/info', verify, async (req, res) => {
+    const user = await User.findById(req.user._id)
+    res.send(user)
+})
 
 router.post('/register', async (req, res) => {
     
