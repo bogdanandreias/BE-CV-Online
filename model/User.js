@@ -65,7 +65,7 @@ const userSchema = new mongoose.Schema({
             description: {
                 type: String,
                 min: 10,
-                max: 300,
+                max: 300, 
                 default: null
             }
         },
