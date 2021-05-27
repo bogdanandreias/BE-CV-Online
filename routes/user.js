@@ -4,11 +4,44 @@ const jwt = require('jsonwebtoken')
 const {registerValidation, loginValidation} = require('../validation')
 const bcrypt = require('bcryptjs')
 const verify = require('./verifyToken')
+const multer = require('multer')
 
-router.put('/info', verify, async (req, res) => {
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg' || file.mimetype === 'image/png' || file.mimetype === 'image/webp') {
+            cb(null, './uploads/image')
+        } else if(file.mimetype === 'application/pdf') {
+            cb(null, './uploads/pdf')
+        }
+    },
+    filename: function(req, file, cb) {
+        // cb(null, new Date().toISOString() + file.originalname)
+        cb(null, Date.now() + file.originalname)
+    } 
+})
+
+const fileFilter = (req, file, cb) => {
+    if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg' || file.mimetype === 'image/png' || file.mimetype === 'image/webp') {
+        cb(null, true)
+    } else if(file.mimetype === 'application/pdf') {
+        cb(null, true)
+    } else {
+        cb(null, false)
+    }
+}
+
+const upload = multer({
+    storage: storage, 
+    limits: {
+        fileSize: 1024 * 1024 * 5 //maximum file size of 5mb
+    },
+    fileFilter: fileFilter
+})
+
+router.put('/info', upload.any(), verify, async (req, res) => {
     // const user = await User.findById(req.user._id)
     // res.send(req.body.occupation)
-    var cv = {
+    var cv = { 
         occupation: req.body.occupation,
         about: req.body.about,
         skill1: {
@@ -30,12 +63,19 @@ router.put('/info', verify, async (req, res) => {
         twitter: req.body.social ? req.body.social.twitter : null,
         linkedin: req.body.social ? req.body.social.linkedin : null,
     }
+    const foundImage = req.files.find(element => element.fieldname == 'image');
+    var image = foundImage.path.replace(/\\/g,'/')
+    const foundPdf = req.files.find(element => element.fieldname == 'pdf');
+    var pdf = foundPdf.path.replace(/\\/g,'/')
+
     const updatedUser = await User.updateOne(
         { _id: req.user._id },
         { $set: 
             { 
                 "cv":  cv,
-                "social": social
+                "social": social,
+                "image": image,
+                "pdf": pdf,
             }
         }
     )

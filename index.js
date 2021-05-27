@@ -5,7 +5,7 @@ const dotenv = require('dotenv')
 const { connect } = require('./routes/user')
 // Import Routes
 const authRoute = require('./routes/user')
-const postsRoute = require('./routes/posts')
+// const postsRoute = require('./routes/posts')
 
 dotenv.config()
 
@@ -15,10 +15,11 @@ mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true, useUnifiedT
 )
 
 // Middlewares
+app.use('/uploads', express.static('uploads')) // make folder public
 app.use(express.json())
 // Route Middlewares
 app.use('/api/user', authRoute)
-app.use('/api/posts', postsRoute)
+// app.use('/api/posts', postsRoute)
 
 app.listen(3000, () => console.log('Server running.'))
 
