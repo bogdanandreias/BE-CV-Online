@@ -39,41 +39,28 @@ const upload = multer({
 })
 
 router.put('/info', upload.any(), verify, async (req, res) => {
+    jsonCv = JSON.parse(req.body.cv)
+    // console.log(jsonCv)
+    jsonSocial = JSON.parse(req.body.social)
+    // console.log(jsonSocial)
     // const user = await User.findById(req.user._id)
     // res.send(req.body.occupation)
-    var cv = { 
-        occupation: req.body.occupation,
-        about: req.body.about,
-        skill1: {
-            title: req.body.skill1 ? req.body.skill1.title : null,
-            description:  req.body.skill1 ? req.body.skill1.description : null,
-        },
-        skill2: {
-            title: req.body.skill2 ? req.body.skill2.title : null,
-            description:  req.body.skill2 ? req.body.skill2.description : null,
-        },
-        skill3: {
-            title: req.body.skill3 ? req.body.skill3.title : null,
-            description:  req.body.skill3 ? req.body.skill3.description : null,
-        },
-    }
-    var social = {
-        facebook: req.body.social ? req.body.social.facebook : null,
-        instagram: req.body.social ? req.body.social.instagram : null,
-        twitter: req.body.social ? req.body.social.twitter : null,
-        linkedin: req.body.social ? req.body.social.linkedin : null,
-    }
+    var firstName = req.body.firstName
+    var lastName = req.body.lastName
     const foundImage = req.files.find(element => element.fieldname == 'image');
-    var image = foundImage.path.replace(/\\/g,'/')
+    // console.log(req.files)
+    var image = foundImage ? foundImage.path.replace(/\\/g,'/') : "uploads/image/default.png"
     const foundPdf = req.files.find(element => element.fieldname == 'pdf');
-    var pdf = foundPdf.path.replace(/\\/g,'/')
+    var pdf = foundPdf ? foundPdf.path.replace(/\\/g,'/') : null
 
     const updatedUser = await User.updateOne(
         { _id: req.user._id },
         { $set: 
             { 
-                "cv":  cv,
-                "social": social,
+                "lastName": lastName,
+                "firstName": firstName,
+                "cv":  jsonCv,
+                "social": jsonSocial,
                 "image": image,
                 "pdf": pdf,
             }
@@ -84,18 +71,31 @@ router.put('/info', upload.any(), verify, async (req, res) => {
 
 router.get('/info', verify, async (req, res) => {
     const user = await User.findById(req.user._id)
-    res.send(user)
+    let newUser = {
+        "_id": user._id,
+        "firstName": user.firstName,
+        "lastName": user.lastName,
+        "email": user.email,
+        "date": user.date,
+        "image": user.image,
+        "pdf": user.pdf,
+        "cv": user.cv,
+        "social": user.social,
+        "image": user.image,
+        "pdf": user.pdf,
+    }
+    res.send(newUser)
 })
 
 router.post('/register', async (req, res) => {
     
     // Validate
     const {error} = registerValidation(req.body)
-    if(error) return res.status(400).send(error.details[0].message)
+    if(error) return res.status(200).send({auth: 'false', msg: error.details[0].message })
 
     // Check if user already exists
     const emailExist = await User.findOne({ email: req.body.email })
-    if(emailExist) return res.status(400).send('Email already exists.')
+    if(emailExist) return res.status(200).send({auth: 'false', msg: 'Email exists' })
 
     // Hash password
     const salt = await bcrypt.genSalt(10)
@@ -110,9 +110,10 @@ router.post('/register', async (req, res) => {
     })
     try{
         const savedUser = await user.save()
-        res.send({ user: user._id })
+        const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET)
+        res.header('auth-token', token).send({auth: 'true', token: token, msg: savedUser})
     }catch(err){
-        res.status(400)
+        res.status(200)
     }
 })
 
@@ -120,19 +121,19 @@ router.post('/login', async (req, res) => {
     
     // Validate
     const {error} = loginValidation(req.body)
-    if(error) return res.status(400).send(error.details[0].message)
+    if(error) return res.status(200).send(error.details[0].message)
 
     // Check if email exists
     const user = await User.findOne({ email: req.body.email })
-    if(!user) return res.status(400).send('Email or password is wrong.')
+    if(!user) return res.status(200).send({auth: 'false', msg: 'Email or password is wrong.' })
 
     // Check if password is correct
     const validPass = await bcrypt.compare(req.body.password, user.password)
-    if(!validPass) return res.status(400).send('Email or password is wrong.')
+    if(!validPass) return res.status(200).send({auth: 'false', msg: 'Email or password is wrong.' })
 
     // Create token
     const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET)
-    res.header('auth-token', token).send(token)
+    res.header('auth-token', token).send({auth: 'true', token: token})
 
 })
 
