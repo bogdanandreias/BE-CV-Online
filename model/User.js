@@ -97,7 +97,7 @@ const userSchema = new mongoose.Schema({
             max: 200,
             default: null
         },
-        linkedin: {
+        youtube: {
             type: String,
             min: 3,
             max: 200,
@@ -115,7 +115,7 @@ const userSchema = new mongoose.Schema({
         required: true,
         min: 3,
         max: 1000,
-        default: 'images/default.jpg'
+        default: 'uploads/image/default.png'
     },
     pdf: {
         type: String,
